@@ -27,8 +27,21 @@ npx vuku
 ### Options
 
 - `-s, --skip-emoji`: Skip adding emojis to commit messages
+- `-d, --detailed`: Show additional optional fields (scope, breaking changes, body, footer)
 - `-V, --version`: Output the version number
 - `-h, --help`: Display help information
+
+### Basic vs Detailed Mode
+
+By default, vuku runs in basic mode, asking only for essential commit information:
+- Type of change
+- Description
+- Breaking changes indicator
+
+When run with `--detailed` flag, additional fields become available:
+- Scope (optional)
+- Extended description (optional)
+- Footer notes (optional)
 
 ## Installation (Optional)
 
@@ -81,38 +94,12 @@ The tool supports the following commit types:
 
 ## Example Output
 
+Basic mode:
 ```
-⚠️  You are currently on main branch.
-It is recommended to create a new branch for your changes.
-? Would you like to create a new branch? Yes
-? Select the type of branch: feature - For new features
-? Enter the branch name (without the type prefix): user-auth
-✅ Created and switched to branch: feature/user-auth
-
 ? Select the type of change you're committing: ✨ feat: A new feature
-? Enter the scope of this change (optional): auth
-? Enter a short description: add OAuth2 support
+? Enter a short description: add user authentication
 ? Are there any breaking changes? No
-? Enter a longer description (optional): Implemented OAuth2 authentication flow with support for multiple providers
-? Enter any footer notes (optional): Closes #123
-
-Commit message preview:
-
-✨ feat(auth): add OAuth2 support
-
-Implemented OAuth2 authentication flow with support for multiple providers
-
-Closes #123
-
-Proceed with commit? Yes
-
 ✅ Successfully created commit!
 ```
 
-## License
-
-MIT
-
-## Author
-
-Michael Magan 
+Detailed mode (`
