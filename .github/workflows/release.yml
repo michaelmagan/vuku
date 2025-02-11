@@ -23,13 +23,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
+          cache: "npm"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Verify package-lock.json
+        run: npm audit
 
       - name: Install dependencies
         run: npm install
@@ -44,6 +48,8 @@ jobs:
         uses: ridedott/release-me-action@v3
         with:
           node-module: true
+          commit-assets: |
+            dist/
           release-rules: |
             [
               { "type": "feat", "release": "minor" },
