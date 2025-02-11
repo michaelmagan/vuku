@@ -199,4 +199,17 @@ export class PromptService {
       },
     ]);
   }
+
+  async promptForPush(branchName: string): Promise<boolean> {
+    const { shouldPush } = await inquirer.prompt<{ shouldPush: boolean }>([
+      {
+        type: "confirm",
+        name: "shouldPush",
+        message: `Would you like to push your changes to origin/${branchName}?`,
+        default: true,
+      },
+    ]);
+
+    return shouldPush;
+  }
 }

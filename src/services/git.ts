@@ -66,4 +66,19 @@ export class GitService {
       process.exit(1);
     }
   }
+
+  async push(branchName: string): Promise<void> {
+    try {
+      await this.git.push("origin", branchName);
+      console.log(
+        chalk.green(`✅ Successfully pushed to origin/${branchName}`)
+      );
+    } catch (error) {
+      console.error(
+        chalk.red("Error pushing to remote:"),
+        (error as Error).message
+      );
+      process.exit(1);
+    }
+  }
 }

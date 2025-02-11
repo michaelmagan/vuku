@@ -70,6 +70,12 @@ async function main() {
     );
     const commitMessage = formatterService.formatCommitMessage(commitAnswers);
     await gitService.commit(commitMessage);
+
+    const currentBranchName = await gitService.getCurrentBranch();
+    const shouldPush = await promptService.promptForPush(currentBranchName);
+    if (shouldPush) {
+      await gitService.push(currentBranchName);
+    }
   } catch (error) {
     console.error(chalk.red("An error occurred:"), (error as Error).message);
     process.exit(1);
