@@ -358,6 +358,30 @@ async function generateCommitMessage(): Promise<void> {
     try {
       await git.commit(commitMessage);
       console.log(chalk.green("✅ Successfully created commit!"));
+
+      const { shouldPush } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "shouldPush",
+          message: "Would you like to push this branch?",
+          default: true,
+        },
+      ]);
+
+      if (shouldPush) {
+        try {
+          const currentBranch = await getCurrentBranch();
+          await git.push("origin", currentBranch);
+          console.log(
+            chalk.green(`✅ Successfully pushed to origin/${currentBranch}!`)
+          );
+        } catch (error: unknown) {
+          console.error(
+            chalk.red("Error pushing branch:"),
+            (error as Error).message
+          );
+        }
+      }
     } catch (error: unknown) {
       console.error(
         chalk.red("Error creating commit:"),
