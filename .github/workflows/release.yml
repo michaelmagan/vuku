@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - beta
+      - alpha
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: ridedott/release-me-action@v3
+        with:
+          node-module: true
+          release-rules: |
+            [
+              { "type": "feat", "release": "minor" },
+              { "type": "fix", "release": "patch" },
+              { "type": "docs", "release": "patch" },
+              { "type": "style", "release": "patch" },
+              { "type": "refactor", "release": "patch" },
+              { "type": "perf", "release": "patch" },
+              { "type": "test", "release": "patch" },
+              { "type": "build", "release": "patch" },
+              { "type": "ci", "release": "patch" },
+              { "type": "chore", "release": "patch" }
+            ]
+          release-branches: |
+            [
+              "main",
+              "master",
+              {"name": "beta", "prerelease": "beta"},
+              {"name": "alpha", "prerelease": "alpha"}
+            ]
