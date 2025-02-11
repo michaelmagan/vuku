@@ -87,22 +87,25 @@ program
   )
   .version("1.0.0")
   .option("-s, --skip-emoji", "Skip adding emojis to commit messages")
+  .option("-d, --detailed", "Show additional optional fields during commit")
   .addHelpText(
     "after",
     `
 Example usage:
   $ vuku
   $ vuku --skip-emoji
+  $ vuku --detailed
 
 The tool will guide you through:
 1. Creating a new branch (optional)
 2. Creating a conventional commit message with:
    - Type of change (feat, fix, docs, etc.)
-   - Scope (optional)
    - Description
    - Breaking changes indicator
-   - Extended description (optional)
-   - Footer notes (optional)`
+   ${chalk.gray("When using --detailed flag:")}
+   ${chalk.gray("   - Scope (optional)")}
+   ${chalk.gray("   - Extended description (optional)")}
+   ${chalk.gray("   - Footer notes (optional)")}`
   )
   .parse(process.argv);
 
@@ -173,7 +176,7 @@ async function generateCommitMessage(): Promise<void> {
     createBranch = shouldCreateBranch;
   }
 
-  const answers: CommitAnswers = await inquirer.prompt([
+  const questions = [
     {
       type: "list",
       name: "branchType",
@@ -204,6 +207,7 @@ async function generateCommitMessage(): Promise<void> {
       type: "input",
       name: "scope",
       message: "Enter the scope of this change (optional):",
+      when: () => options.detailed,
     },
     {
       type: "input",
@@ -222,13 +226,17 @@ async function generateCommitMessage(): Promise<void> {
       type: "input",
       name: "body",
       message: "Enter a longer description (optional):",
+      when: () => options.detailed,
     },
     {
       type: "input",
       name: "footer",
       message: "Enter any footer notes (optional):",
+      when: () => options.detailed,
     },
-  ]);
+  ];
+
+  const answers: CommitAnswers = await inquirer.prompt(questions);
 
   if (createBranch) {
     const branchFullName = `${answers.branchType}/${answers.branchName}`;
