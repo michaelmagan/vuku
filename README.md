@@ -16,15 +16,34 @@ An interactive CLI tool to help create git branches and conventional commit mess
 - 📚 Body and footer support
 - 🎨 Colorful terminal output
 
-## Installation
+## Usage
 
-You can install globally:
+Simply run the command in any git repository:
+
+```bash
+npx vuku
+```
+
+### Options
+
+- `-s, --skip-emoji`: Skip adding emojis to commit messages
+- `-V, --version`: Output the version number
+- `-h, --help`: Display help information
+
+## Installation (Optional)
+
+While npx is the recommended way to use vuku, you can install it globally if you prefer:
 
 ```bash
 npm install -g vuku
 ```
 
-Or install from source:
+Then run it with:
+```bash
+vuku
+```
+
+### Installing from source
 
 ```bash
 git clone https://github.com/yourusername/vuku.git
@@ -33,20 +52,6 @@ npm install
 npm run build
 npm install -g .
 ```
-
-## Usage
-
-Simply run the command in any git repository:
-
-```bash
-vuku
-```
-
-### Options
-
-- `-s, --skip-emoji`: Skip adding emojis to commit messages
-- `-V, --version`: Output the version number
-- `-h, --help`: Display help information
 
 ## Branch Types
 
