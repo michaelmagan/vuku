@@ -70,3 +70,9 @@ jobs:
               {"name": "beta", "prerelease": "beta"},
               {"name": "alpha", "prerelease": "alpha"}
             ]
+
+      - name: Publish to NPM
+        if: success()
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
