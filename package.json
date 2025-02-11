@@ -1,0 +1,45 @@
+{
+  "name": "vuku",
+  "version": "1.0.0",
+  "description": "Interactive git branch and commit message generator",
+  "main": "dist/index.js",
+  "bin": {
+    "vuku": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [
+    "conventional-commits",
+    "git",
+    "cli",
+    "emoji",
+    "vuku"
+  ],
+  "author": "Michael Magan",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "inquirer": "^8.2.5",
+    "simple-git": "^3.19.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.2.6",
+    "@types/node": "^18.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/vuku"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/vuku/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
