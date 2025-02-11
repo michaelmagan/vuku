@@ -124,9 +124,84 @@ async function getCurrentBranch(): Promise<string> {
   }
 }
 
+async function handleFileStaging(): Promise<boolean> {
+  try {
+    const status = await git.status();
+    const unstagedFiles = [
+      ...status.not_added,
+      ...status.modified,
+      ...status.deleted,
+    ];
+
+    if (unstagedFiles.length === 0) {
+      const stagedFiles = [...status.staged, ...status.created];
+      if (stagedFiles.length === 0) {
+        console.log(
+          chalk.yellow("No files to commit. Please add or modify files first.")
+        );
+        return false;
+      }
+      return true;
+    }
+
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: "You have unstaged files. What would you like to do?",
+        choices: [
+          { name: "Select individual files to stage", value: "select" },
+          { name: "Stage all files", value: "all" },
+          { name: "Cancel", value: "cancel" },
+        ],
+      },
+    ]);
+
+    if (action === "cancel") {
+      return false;
+    }
+
+    if (action === "all") {
+      await git.add(".");
+      console.log(chalk.green("✅ All files have been staged"));
+      return true;
+    }
+
+    const { selectedFiles } = await inquirer.prompt([
+      {
+        type: "checkbox",
+        name: "selectedFiles",
+        message: "Select files to stage:",
+        choices: unstagedFiles.map((file: string) => ({
+          name: file,
+          value: file,
+        })),
+      },
+    ]);
+
+    if (selectedFiles.length === 0) {
+      console.log(chalk.yellow("No files selected. Operation cancelled."));
+      return false;
+    }
+
+    await Promise.all(selectedFiles.map((file: string) => git.add(file)));
+    console.log(chalk.green(`✅ Staged ${selectedFiles.length} file(s)`));
+    return true;
+  } catch (error) {
+    console.error(chalk.red("Error staging files:"), (error as Error).message);
+    return false;
+  }
+}
+
 async function generateCommitMessage(): Promise<void> {
   const currentBranch = await getCurrentBranch();
   const isOnMainBranch = ["main", "master"].includes(currentBranch);
+
+  // Check and handle file staging first
+  const filesStaged = await handleFileStaging();
+  if (!filesStaged) {
+    process.exit(0);
+  }
 
   let createBranch = false;
   if (isOnMainBranch) {
