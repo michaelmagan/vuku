@@ -8,16 +8,19 @@ export class PromptService {
   constructor(private gitService: GitService) {}
 
   async handleFileStaging(): Promise<boolean> {
-    const unstagedFiles = await this.gitService.getUnstagedFiles();
-    const stagedFiles = await this.gitService.getStagedFiles();
+    const modifiedFiles = await this.gitService.getAllModifiedFiles();
+    const unstagedFiles = modifiedFiles.filter((f) => !f.staged);
+    const stagedFiles = modifiedFiles.filter((f) => f.staged);
 
+    if (modifiedFiles.length === 0) {
+      console.log(
+        chalk.yellow("No files to commit. Please add or modify files first.")
+      );
+      return false;
+    }
+
+    // If all files are already staged, no need to ask
     if (unstagedFiles.length === 0) {
-      if (stagedFiles.length === 0) {
-        console.log(
-          chalk.yellow("No files to commit. Please add or modify files first.")
-        );
-        return false;
-      }
       return true;
     }
 
@@ -25,9 +28,21 @@ export class PromptService {
       {
         type: "list",
         name: "action",
-        message: "You have unstaged files. What would you like to do?",
+        message: `You have ${unstagedFiles.length} unstaged file(s)${
+          stagedFiles.length > 0
+            ? ` and ${stagedFiles.length} staged file(s)`
+            : ""
+        }. What would you like to do?`,
         choices: [
-          { name: "Select individual files to stage", value: "select" },
+          ...(stagedFiles.length > 0
+            ? [
+                {
+                  name: `Proceed with ${stagedFiles.length} staged file(s) only`,
+                  value: "proceed",
+                },
+              ]
+            : []),
+          { name: "Select files to stage/unstage", value: "select" },
           { name: "Stage all files", value: "all" },
           { name: "Cancel", value: "cancel" },
         ],
@@ -35,6 +50,7 @@ export class PromptService {
     ]);
 
     if (action === "cancel") return false;
+    if (action === "proceed") return true;
     if (action === "all") {
       await this.gitService.stageAllFiles();
       console.log(chalk.green("✅ All files have been staged"));
@@ -47,26 +63,57 @@ export class PromptService {
       {
         type: "checkbox",
         name: "selectedFiles",
-        message: "Select files to stage:",
-        choices: unstagedFiles.map((file) => ({
-          name: file,
-          value: file,
+        message: "Select files to stage (already staged files are checked):",
+        choices: modifiedFiles.map((file) => ({
+          name: `${file.file}${file.staged ? " (staged)" : ""}`,
+          value: file.file,
+          checked: file.staged,
         })),
       },
     ]);
 
-    if (selectedFiles.length === 0) {
-      console.log(chalk.yellow("No files selected. Operation cancelled."));
-      return false;
+    // Get the files that changed their staging status
+    const filesToStage = selectedFiles.filter(
+      (file) => !stagedFiles.find((f) => f.file === file)
+    );
+    const filesToUnstage = stagedFiles
+      .filter((f) => !selectedFiles.includes(f.file))
+      .map((f) => f.file);
+
+    if (filesToStage.length === 0 && filesToUnstage.length === 0) {
+      console.log(chalk.yellow("No changes to staging area."));
+      return stagedFiles.length > 0;
     }
 
-    await this.gitService.stageFiles(selectedFiles);
-    console.log(chalk.green(`✅ Staged ${selectedFiles.length} file(s)`));
-    return true;
+    // Stage new files
+    if (filesToStage.length > 0) {
+      await this.gitService.stageFiles(filesToStage);
+      console.log(chalk.green(`✅ Staged ${filesToStage.length} file(s)`));
+    }
+
+    // Unstage files that were unchecked
+    if (filesToUnstage.length > 0) {
+      await this.gitService.unstageFiles(filesToUnstage);
+      console.log(chalk.yellow(`⚠️ Unstaged ${filesToUnstage.length} file(s)`));
+    }
+
+    const finalStagedCount = selectedFiles.length;
+    return finalStagedCount > 0;
   }
 
   async promptForBranchCreation(currentBranch: string): Promise<boolean> {
     const isOnMainBranch = MAIN_BRANCHES.includes(currentBranch);
+    const branchPrefixes = BRANCH_TYPES.map((type) => type.value);
+    const isOnFeatureBranch = branchPrefixes.some(
+      (prefix) =>
+        currentBranch.startsWith(prefix + "/") ||
+        currentBranch.startsWith(prefix + "-")
+    );
+
+    // If we're on a feature branch, no need to create a new one
+    if (isOnFeatureBranch) {
+      return false;
+    }
 
     if (isOnMainBranch) {
       console.log(

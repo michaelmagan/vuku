@@ -31,9 +31,38 @@ export class GitService {
     return [...status.staged, ...status.created];
   }
 
+  async getAllModifiedFiles(): Promise<{ file: string; staged: boolean }[]> {
+    const status = await this.git.status();
+    const stagedFiles = new Set([...status.staged, ...status.created]);
+    const modifiedStaged = new Set(
+      status.modified.filter((file) => status.staged.includes(file))
+    );
+
+    const allFiles = [
+      ...status.not_added,
+      ...status.modified,
+      ...status.deleted,
+      ...stagedFiles,
+    ];
+
+    // Remove duplicates and track staging status
+    const uniqueFiles = [...new Set(allFiles)].map((file) => ({
+      file,
+      staged: stagedFiles.has(file) || modifiedStaged.has(file),
+    }));
+
+    return uniqueFiles;
+  }
+
   async stageFiles(files: string[]): Promise<void> {
     for (const file of files) {
       await this.git.add(file);
+    }
+  }
+
+  async unstageFiles(files: string[]): Promise<void> {
+    for (const file of files) {
+      await this.git.raw(["reset", "HEAD", file]);
     }
   }
 
