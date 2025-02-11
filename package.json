@@ -34,10 +34,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/vuku.git"
+    "url": "https://github.com/michaelmagan/vuku.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/vuku/issues"
+    "url": "https://github.com/michaelmagan/vuku/issues"
   },
   "engines": {
     "node": ">=18.0.0"
