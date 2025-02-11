@@ -201,11 +201,16 @@ export class PromptService {
   }
 
   async promptForPush(branchName: string): Promise<boolean> {
+    const isPublished = await this.gitService.isBranchPublished(branchName);
+    const message = isPublished
+      ? `Would you like to push your commit to origin/${branchName}?`
+      : `This branch is not published yet. Would you like to publish it to origin/${branchName}?`;
+
     const { shouldPush } = await inquirer.prompt<{ shouldPush: boolean }>([
       {
         type: "confirm",
         name: "shouldPush",
-        message: `Would you like to push your changes to origin/${branchName}?`,
+        message,
         default: true,
       },
     ]);

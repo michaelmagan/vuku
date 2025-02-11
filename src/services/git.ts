@@ -32,7 +32,9 @@ export class GitService {
   }
 
   async stageFiles(files: string[]): Promise<void> {
-    await Promise.all(files.map((file) => this.git.add(file)));
+    for (const file of files) {
+      await this.git.add(file);
+    }
   }
 
   async stageAllFiles(): Promise<void> {
@@ -67,9 +69,31 @@ export class GitService {
     }
   }
 
-  async push(branchName: string): Promise<void> {
+  async isBranchPublished(branchName: string): Promise<boolean> {
     try {
-      await this.git.push("origin", branchName);
+      const result = await this.git.raw([
+        "ls-remote",
+        "--heads",
+        "origin",
+        branchName,
+      ]);
+      return result.length > 0;
+    } catch (error) {
+      console.error(
+        chalk.red("Error checking branch status:"),
+        (error as Error).message
+      );
+      return false;
+    }
+  }
+
+  async push(branchName: string, isPublished: boolean): Promise<void> {
+    try {
+      if (isPublished) {
+        await this.git.push("origin", branchName);
+      } else {
+        await this.git.push(["-u", "origin", branchName]);
+      }
       console.log(
         chalk.green(`✅ Successfully pushed to origin/${branchName}`)
       );

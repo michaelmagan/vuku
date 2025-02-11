@@ -72,9 +72,10 @@ async function main() {
     await gitService.commit(commitMessage);
 
     const currentBranchName = await gitService.getCurrentBranch();
+    const isPublished = await gitService.isBranchPublished(currentBranchName);
     const shouldPush = await promptService.promptForPush(currentBranchName);
     if (shouldPush) {
-      await gitService.push(currentBranchName);
+      await gitService.push(currentBranchName, isPublished);
     }
   } catch (error) {
     console.error(chalk.red("An error occurred:"), (error as Error).message);
